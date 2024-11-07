@@ -1,29 +1,21 @@
 {
   "compilerOptions": {
-    "strict": true,
-
-    "module": "NodeNext",
-
-    "target": "es2017",
-
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
     "baseUrl": "./",
-
-    "paths": {
-      "#*": ["./src/*"]
-    },
-
-    "esModuleInterop": true,
-
-    "allowJs": true,
-
-    "checkJs": true,
-
-    "noEmit": true,
-
-    "skipLibCheck": true
-  },
-
-  "include": ["src/**/*"],
-
-  "exclude": ["node_modules", "src/**/*.test.*", "src/**/*.spec.*"]
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false
+  }
 }
