@@ -29,7 +29,23 @@ DB_USER=postgres
 DB_PASSWORD=пароль
 DB_NAME=wb_db
 
-### Использование
+### Запуск миграции
+
+npx knex --knexfile src/config/knexfile.ts migrate:latest
+
+### Чтобы откатить миграцию:
+
+npx knex migrate:rollback --all --knexfile src/config/knexfile.ts
+
+### Запуск
+
+npx knex migrate:rollback --knexfile src/config/knexfile.ts
+
+### Запуск с использованием Docker
+
+docker-compose up --build
+
+### Использование API
 
 POST /wildberries/fetch-and-save: Запрашивает данные о тарифах у Wildberries API и сохраняет их в базу данных.
 POST /google-sheets/export: Экспортирует данные из базы данных в указанные Google Sheets. Пример запроса:
