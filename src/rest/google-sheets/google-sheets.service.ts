@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { google } from 'googleapis';
 import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
-import * as credentials from '../../config/google-credentials.json';
 
 @Injectable()
 export class GoogleSheetsService {
@@ -11,7 +10,14 @@ export class GoogleSheetsService {
 
   constructor(@InjectKnex() private readonly knex: Knex) {
     this.authClient = new google.auth.GoogleAuth({
-      credentials,
+      credentials: {
+        type: 'service_account',
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+        private_key: process.env.GOOGLE_PRIVATE_KEY,
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+      },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
   }
