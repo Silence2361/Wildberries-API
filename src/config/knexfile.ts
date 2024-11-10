@@ -5,14 +5,17 @@ import * as path from 'path';
 dotenv.config();
 
 const config: Knex.Config = {
-  client: 'pg',
-  connection: 'postgres://postgres:12345678@localhost:5432/wb_db',
-
+  client: process.env.DB_CLIENT || 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 5432,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+  },
   migrations: {
-    directory: path.resolve(__dirname, './database/migrations'),
+    directory: path.resolve(__dirname, 'database/migrations'),
   },
 };
-
-console.log('Knex Configuration:', config);
 
 export default config;
