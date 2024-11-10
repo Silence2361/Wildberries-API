@@ -5,9 +5,16 @@ import { InjectKnex } from 'nestjs-knex';
 
 @Injectable()
 export class GoogleSheetsService {
+  /** Google Sheets API instance */
   private sheets = google.sheets('v4');
+
+  /** Authentication client for Google Sheets API */
   private authClient;
 
+  /**
+   * Initializes the GoogleSheetsService with database and authentication configurations.
+   * @param {Knex} knex - Knex instance for interacting with the database
+   */
   constructor(@InjectKnex() private readonly knex: Knex) {
     this.authClient = new google.auth.GoogleAuth({
       credentials: {
@@ -22,6 +29,14 @@ export class GoogleSheetsService {
     });
   }
 
+  /**
+   * Exports data from the database to a specified range in a Google Sheets spreadsheet.
+   * Fetches tariff data from the database, organizes it into a format suitable for Google Sheets,
+   * and writes it to the specified range in the target spreadsheet.
+   * @param {string} spreadsheetId - ID of the Google Sheets spreadsheet to export data to
+   * @param {string} [range='stocks_coefs!A2'] - The range within the spreadsheet where data will be written
+   * @returns {Promise<void>}
+   */
   async exportDataToSheet(
     spreadsheetId: string,
     range: string = 'stocks_coefs!A2',
