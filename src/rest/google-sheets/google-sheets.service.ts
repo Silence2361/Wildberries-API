@@ -3,17 +3,18 @@ import { google } from 'googleapis';
 import { Knex } from 'knex';
 import { InjectKnex } from 'nestjs-knex';
 
+/**
+ * Service for exporting data from PostgreSQL to Google Sheets.
+ * Uses Google Sheets API to update multiple Google Sheets with data from the database.
+ */
 @Injectable()
 export class GoogleSheetsService {
-  /** Google Sheets API instance */
   private sheets = google.sheets('v4');
-
-  /** Authentication client for Google Sheets API */
   private authClient;
 
   /**
-   * Initializes the GoogleSheetsService with database and authentication configurations.
-   * @param {Knex} knex - Knex instance for interacting with the database
+   * Constructs an instance of GoogleSheetsService with Google Sheets API authorization.
+   * @param {Knex} knex - The Knex instance for database operations.
    */
   constructor(@InjectKnex() private readonly knex: Knex) {
     this.authClient = new google.auth.GoogleAuth({
@@ -21,7 +22,7 @@ export class GoogleSheetsService {
         type: 'service_account',
         project_id: process.env.GOOGLE_PROJECT_ID,
         private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-        private_key: process.env.GOOGLE_PRIVATE_KEY,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
         client_id: process.env.GOOGLE_CLIENT_ID,
       },
@@ -30,50 +31,57 @@ export class GoogleSheetsService {
   }
 
   /**
-   * Exports data from the database to a specified range in a Google Sheets spreadsheet.
-   * Fetches tariff data from the database, organizes it into a format suitable for Google Sheets,
-   * and writes it to the specified range in the target spreadsheet.
-   * @param {string} spreadsheetId - ID of the Google Sheets spreadsheet to export data to
-   * @param {string} [range='stocks_coefs!A2'] - The range within the spreadsheet where data will be written
-   * @returns {Promise<void>}
+   * Exports data from the database to multiple Google Sheets.
+   * @param {string[]} spreadsheetIds - Array of Google Sheets IDs
+   * @param {string} [range='stocks_coefs!A2'] - The range to write data in each sheet
+   * @returns {Promise<void>} - Resolves when data export is complete.
+   * @throws {TypeError} - If spreadsheetIds is not an array.
    */
-  async exportDataToSheet(
-    spreadsheetId: string,
+  async exportDataToSheets(
+    spreadsheetIds: string[],
     range: string = 'stocks_coefs!A2',
   ): Promise<void> {
-    try {
-      const auth = await this.authClient.getClient();
+    if (!Array.isArray(spreadsheetIds)) {
+      throw new TypeError('spreadsheetIds must be an array');
+    }
 
-      const data = await this.knex('tariffs')
-        .select(
-          'boxDeliveryAndStorageExpr',
-          'boxDeliveryBase',
-          'boxDeliveryLiter',
-          'boxStorageBase',
-          'boxStorageLiter',
-          'warehouseName',
-        )
-        .orderBy('boxDeliveryAndStorageExpr', 'asc');
+    const auth = await this.authClient.getClient();
 
-      const values = data.map((item) => [
-        item.boxDeliveryAndStorageExpr,
-        item.boxDeliveryBase,
-        item.boxDeliveryLiter,
-        item.boxStorageBase,
-        item.boxStorageLiter,
-        item.warehouseName,
-      ]);
+    const data = await this.knex('tariffs')
+      .select(
+        'boxDeliveryAndStorageExpr',
+        'boxDeliveryBase',
+        'boxDeliveryLiter',
+        'boxStorageBase',
+        'boxStorageLiter',
+        'warehouseName',
+      )
+      .orderBy('boxDeliveryAndStorageExpr', 'asc');
 
-      await this.sheets.spreadsheets.values.update({
-        auth,
-        spreadsheetId,
-        range,
-        valueInputOption: 'RAW',
-        requestBody: { values },
-      });
-      console.log('Data successfully exported to Google Sheets');
-    } catch (error) {
-      console.error('Error exporting data to Google Sheets:', error);
+    const values = data.map((item) => [
+      item.boxDeliveryAndStorageExpr,
+      item.boxDeliveryBase,
+      item.boxDeliveryLiter,
+      item.boxStorageBase,
+      item.boxStorageLiter,
+      item.warehouseName,
+    ]);
+
+    for (const spreadsheetId of spreadsheetIds) {
+      try {
+        await this.sheets.spreadsheets.values.update({
+          auth,
+          spreadsheetId,
+          range,
+          valueInputOption: 'RAW',
+          requestBody: { values },
+        });
+      } catch (error) {
+        console.error(
+          `Error exporting data to Google Sheets with ID: ${spreadsheetId}`,
+          error,
+        );
+      }
     }
   }
 }

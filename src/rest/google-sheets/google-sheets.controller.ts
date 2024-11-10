@@ -11,11 +11,13 @@ export class GoogleSheetsController {
 
   /**
    * Endpoint to export data to a specified Google Sheets spreadsheet.
-   * @param {string} spreadsheetId - The ID of the Google Sheets spreadsheet where data will be exported
+   * @param {string[]} spreadsheetIds - Array of Google Sheets IDs
    * @returns {Promise<void>} Confirmation message or an error if the export fails
    */
   @Post('export')
-  async exportToGoogleSheet(@Body('spreadsheetId') spreadsheetId: string) {
-    return this.googleSheetsService.exportDataToSheet(spreadsheetId);
+  async exportToGoogleSheet(
+    @Body('spreadsheetIds') spreadsheetIds: string[],
+  ): Promise<void> {
+    await this.googleSheetsService.exportDataToSheets(spreadsheetIds);
   }
 }
