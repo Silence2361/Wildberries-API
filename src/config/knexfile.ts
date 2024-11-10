@@ -2,8 +2,6 @@ import * as dotenv from 'dotenv';
 import { Knex } from 'knex';
 import * as path from 'path';
 
-// dotenv.config();
-
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 /**
