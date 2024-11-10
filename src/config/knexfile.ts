@@ -2,7 +2,9 @@ import * as dotenv from 'dotenv';
 import { Knex } from 'knex';
 import * as path from 'path';
 
-dotenv.config();
+// dotenv.config();
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 /**
  * Knex configuration object for connecting to the database.
@@ -11,6 +13,7 @@ dotenv.config();
  */
 const config: Knex.Config = {
   client: process.env.DB_CLIENT || 'pg',
+
   connection: {
     /** Database host, loaded from environment variable DB_HOST */
     host: process.env.DB_HOST,
@@ -27,6 +30,7 @@ const config: Knex.Config = {
     /** Database password, loaded from environment variable DB_PASSWORD */
     password: process.env.DB_PASSWORD,
   },
+
   migrations: {
     /** Directory path for storing database migration files */
     directory: path.resolve(__dirname, 'database/migrations'),
