@@ -6,18 +6,28 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - DB_HOST=db
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      - db
+      - migrate
+
+  migrate:
+    image: node:16
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npx knex --knexfile src/config/knexfile.ts migrate:latest
     depends_on:
       - db
 
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
